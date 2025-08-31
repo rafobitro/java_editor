@@ -41,19 +41,48 @@ public class editor{
     //line
     static int x=1;
     //word
-    static int y=1;
+    static int y=0;
     //leter of word
-    static int z=3;
+    static int z=0;
 
     public static void editor_loop(Terminal terminal)throws Exception{
-        while(true)
-        {
+        boolean change = true;
+	while(true){
+	    	    
+            if(change){
+                change=false;
+		print();
+	    }
             
-	    int input= terminal.reader().read();
-	    
-	    if(input==27)
-		break;
-	    System.out.println("kay: " + input + " (" + (char)input + ")");
+            int input= terminal.reader().read();
+
+
+	    if(input==27){
+	        int secondInput = terminal.reader().read();
+		if(secondInput==91){
+		    int thirdInput = terminal.reader().read();
+                    if(thirdInput == 65){ 
+			x--;
+			change=true;
+		    }
+		    else if(thirdInput ==66){ 
+			x++;
+			change=true;
+		    }
+		    else if(thirdInput ==67){ 
+			z++;
+			change=true;
+		    }
+		    else if(thirdInput ==68){ 
+			z--;
+			change=true;
+		    }
+		    // System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");
+		}
+		else
+		    break;
+	    }
+	   // else    // System.out.println("kay: " + input + " (" + (char)input + ")");
 
 	    //print
             //wait response
@@ -68,22 +97,27 @@ public class editor{
     
         //linked list test
 	LinkedList<WordNode> line1 = new LinkedList<>();
-        WordNode word= new WordNode("first",4);
+        WordNode word= new WordNode("first",0);
 	line1.add(word);
         word=new WordNode("second",4);
 	line1.add(word);
         text.add(line1);
         LinkedList<WordNode> line2 = new LinkedList<>();
-        word=new WordNode("L2_first",8);
+        word=new WordNode("L2_first",0);
 	line2.add(word);
-        word=new WordNode("L2_second",0);
+        word=new WordNode("L2_second",4);
 	line2.add(word);
         text.add(line2);	//open file
         //copy into array of links to string
         //close file
-    }  
+    }
     
     public static void print(){
+	System.out.print("\033[H\033[2J");
+        System.out.flush();
+
+
+	System.out.println("x "+ x +" y "+ y + " z " + z);
 	for(int line_index=0; line_index<text.size();line_index++){
             int word_index=0;
 	    for(WordNode word : text.get(line_index)){
