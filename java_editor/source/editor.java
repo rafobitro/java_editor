@@ -36,7 +36,7 @@ public class editor{
 
     
     //declar array of links to strings
-    static ArrayList<LinkedList<WordNode>> text = new ArrayList<>();
+    static ArrayList<ArrayList<WordNode>> text = new ArrayList<>();
 
     //line
     static int x=1;
@@ -44,6 +44,50 @@ public class editor{
     static int y=0;
     //leter of word
     static int z=0;
+
+
+
+    public static void movement_logic_UP(){
+        if(x<text.size()-1)
+	    x++;
+	else
+	    x=0;
+    }
+
+    public static void movement_logic_DAWN(){
+       if(x>0)
+           x--;
+       else
+	   x=text.size()-1;
+    }
+
+    public static void movement_logic_LEFT(){
+           if(z>0)
+	       z--;
+	   else{
+	       if(y==0){
+	           movement_logic_UP();
+                   y=text.get(x).size()-1;
+	       }
+	       else 
+	           y--;
+	       z=text.get(x).get(y).getWord().length()-1;
+	   }
+    }
+
+    public static void movement_logic_RIGHT(){
+           if(z<text.get(x).get(y).getWord().length()-1)
+	       z++;
+	   else{
+	       if(y==text.get(x).size()-1){
+                   movement_logic_DAWN();
+		   y=0;
+	       }
+	       else 
+	           y++;
+	       z=0;
+	   }
+    }
 
     public static void editor_loop(Terminal terminal)throws Exception{
         boolean change = true;
@@ -62,19 +106,19 @@ public class editor{
 		if(secondInput==91){
 		    int thirdInput = terminal.reader().read();
                     if(thirdInput == 65){ 
-			x--;
+			movement_logic_DAWN();
 			change=true;
 		    }
 		    else if(thirdInput ==66){ 
-			x++;
+		        movement_logic_UP();	
 			change=true;
 		    }
 		    else if(thirdInput ==67){ 
-			z++;
+			movement_logic_RIGHT();
 			change=true;
 		    }
 		    else if(thirdInput ==68){ 
-			z--;
+			movement_logic_LEFT();
 			change=true;
 		    }
 		    // System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");
@@ -96,13 +140,13 @@ public class editor{
     public static void init(String file_name[]){
     
         //linked list test
-	LinkedList<WordNode> line1 = new LinkedList<>();
+	ArrayList<WordNode> line1 = new ArrayList<>();
         WordNode word= new WordNode("first",0);
 	line1.add(word);
         word=new WordNode("second",4);
 	line1.add(word);
         text.add(line1);
-        LinkedList<WordNode> line2 = new LinkedList<>();
+        ArrayList<WordNode> line2 = new ArrayList<>();
         word=new WordNode("L2_first",0);
 	line2.add(word);
         word=new WordNode("L2_second",4);
