@@ -47,14 +47,14 @@ public class editor{
 
 
 
-    public static void movement_logic_UP(){
+    public static void movement_logic_DAWN(){
         if(x<text.size()-1)
 	    x++;
 	else
 	    x=0;
     }
 
-    public static void movement_logic_DAWN(){
+    public static void movement_logic_UP(){
        if(x>0)
            x--;
        else
@@ -105,12 +105,12 @@ public class editor{
 	        int secondInput = terminal.reader().read();
 		if(secondInput==91){
 		    int thirdInput = terminal.reader().read();
-                    if(thirdInput == 65){ 
-			movement_logic_DAWN();
+                    if(thirdInput == 65){ 	
+			movement_logic_UP();
 			change=true;
 		    }
 		    else if(thirdInput ==66){ 
-		        movement_logic_UP();	
+		        movement_logic_DAWN();	
 			change=true;
 		    }
 		    else if(thirdInput ==67){ 
@@ -121,7 +121,7 @@ public class editor{
 			movement_logic_LEFT();
 			change=true;
 		    }
-		    // System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");
+		     System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");
 		}
 		else
 		    break;
@@ -151,7 +151,13 @@ public class editor{
 	line2.add(word);
         word=new WordNode("L2_second",4);
 	line2.add(word);
-        text.add(line2);	//open file
+        text.add(line2);
+	ArrayList<WordNode> line3 = new ArrayList<>();
+        word=new WordNode("L3_first",0);
+	line3.add(word);
+        word=new WordNode("L3_second",4);
+	line3.add(word);
+        text.add(line3);	//open file
         //copy into array of links to string
         //close file
     }
@@ -165,9 +171,14 @@ public class editor{
 	for(int line_index=0; line_index<text.size();line_index++){
             int word_index=0;
 	    for(WordNode word : text.get(line_index)){
+                String spaces="";
 		for(int i=0;i<word.getSpaces();i++)
-                    System.out.print(" ");
-                if(line_index==x && word_index==y)
+			spaces+=" ";
+                    if(line_index==x && word_index==y && z<word.getSpaces())
+  	                System.out.print(spaces.substring(0, z) +"\u001b[43m" + spaces.charAt(z) +"\u001b[0m" + spaces.substring(z+ 1));
+		    else
+		        System.out.print(spaces);
+                if(line_index==x && word_index==y && z>=word.getSpaces())
 		    System.out.print(word.getWord().substring(0, z) +"\u001b[43m" + word.getWord().charAt(z) +"\u001b[0m" + word.getWord().substring(z+ 1));
 		else
 		    System.out.print(word.getWord());
