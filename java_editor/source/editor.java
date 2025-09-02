@@ -39,53 +39,105 @@ public class editor{
     static ArrayList<ArrayList<WordNode>> text = new ArrayList<>();
 
     //line
-    static int x=1;
+    static int x=0;
+    //
+    static int real_y=0;
     //word
     static int y=0;
     //leter of word
     static int z=0;
 
+    
+    public static void find_real_y(){
+	real_y=z;
+	for(int word_index=0;word_index<y;word_index++){
+	    real_y+=text.get(x).get(word_index).getWord().length();
+	    real_y+=text.get(x).get(word_index).getSpaces();
+	}
+     
+    }
 
+    public static void colibrateZY(){
+        int line_length=0;
+	boolean breaked_loop=false;
+	for(int word_index=0;word_index<text.get(x).size();word_index++){
+	    int word_length=text.get(x).get(word_index).getWord().length();
+	    word_length+=text.get(x).get(word_index).getSpaces();
+	    if(line_length+word_length>real_y){
+	        y=word_index;
+		z=real_y-line_length;
+		breaked_loop=true;
+		break;
+	    }
+	    else{
+                line_length+=word_length;
+	    }
+	}
+	if (!breaked_loop){
+	    y=text.get(x).size()-1;
+     	    z=text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces();
+	}
+
+    }
 
     public static void movement_logic_DAWN(){
-        if(x<text.size()-1)
+        if(x<text.size()-1){
 	    x++;
-	else
+	    colibrateZY();
+	}
+	else{
 	    x=0;
+	    colibrateZY();
+	}
     }
 
     public static void movement_logic_UP(){
-       if(x>0)
+       if(x>0){
            x--;
-       else
+	   colibrateZY();
+       }
+       else{
 	   x=text.size()-1;
+	   colibrateZY();
+       }
     }
 
     public static void movement_logic_LEFT(){
-           if(z>0)
+           if(z>0){
 	       z--;
+	       real_y--;
+	   }
 	   else{
 	       if(y==0){
 	           movement_logic_UP();
                    y=text.get(x).size()-1;
 	       }
-	       else 
+	       else{ 
 	           y--;
-	       z=text.get(x).get(y).getWord().length()-1;
+	           real_y--;
+	       }
+	       z=text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces();
+	       find_real_y();
 	   }
     }
 
     public static void movement_logic_RIGHT(){
-           if(z<text.get(x).get(y).getWord().length()-1)
+           if(z<text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces()){
 	       z++;
+	       real_y++;
+	   }
 	   else{
-	       if(y==text.get(x).size()-1){
-                   movement_logic_DAWN();
+	       if(y==text.get(x).size()-1){ 
+		   movement_logic_DAWN();
 		   y=0;
+		   
 	       }
-	       else 
+	       else{ 
 	           y++;
+		   real_y++;
+	       }
 	       z=0;
+	       find_real_y();
 	   }
     }
 
@@ -167,7 +219,7 @@ public class editor{
         System.out.flush();
 
 
-	System.out.println("x "+ x +" y "+ y + " z " + z);
+	System.out.println("x "+ x +" real_Y "+real_y +" y "+ y + " z " + z);
 	for(int line_index=0; line_index<text.size();line_index++){
             int word_index=0;
 	    for(WordNode word : text.get(line_index)){
@@ -179,7 +231,7 @@ public class editor{
 		    else
 		        System.out.print(spaces);
                 if(line_index==x && word_index==y && z>=word.getSpaces())
-		    System.out.print(word.getWord().substring(0, z) +"\u001b[43m" + word.getWord().charAt(z) +"\u001b[0m" + word.getWord().substring(z+ 1));
+		    System.out.print(word.getWord().substring(0, z-word.getSpaces()) +"\u001b[43m" + word.getWord().charAt(z-word.getSpaces()) +"\u001b[0m" + word.getWord().substring(z-word.getSpaces()+ 1));
 		else
 		    System.out.print(word.getWord());
 	        word_index++;
