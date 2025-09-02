@@ -5,8 +5,8 @@ import org.jline.terminal.TerminalBuilder;
 
 class WordNode{
 
-    private String word;
-    private int spaces;
+    public String word;
+    public int spaces;
 
 
     public WordNode(String string , int integer){
@@ -178,6 +178,11 @@ public class editor{
 		else
 		    break;
 	    }
+	    else{
+                char c = (char) input;
+                insert(c);
+		change=true;
+	    }
 	   // else    // System.out.println("kay: " + input + " (" + (char)input + ")");
 
 	    //print
@@ -214,6 +219,31 @@ public class editor{
         //close file
     }
     
+
+    public static void insert(char leter){
+        if(leter==' '){
+	    if(z<=text.get(x).get(y).spaces){
+                text.get(x).get(y).spaces++;
+	        z++;
+	        real_y++;
+	    }
+	    else{    
+                text.get(x).add(y+1,new WordNode("",1));
+		//WordNode word= new Wordnode("",1);
+		int cut_size=0;
+		for(int i=z+1;i<=text.get(x).get(y).word.length()+text.get(x).get(y).spaces;i++)
+		{
+		    text.get(x).get(y+1).word+=text.get(x).get(y).word.charAt(i-text.get(x).get(y).spaces-1);
+		    cut_size++;
+	        }
+		text.get(x).get(y).word = text.get(x).get(y).word.substring(0, text.get(x).get(y).word.length() - cut_size);
+		//z++;
+		real_y++;
+                colibrateZY();
+	    }
+	}
+
+    }
     public static void print(){
 	System.out.print("\033[H\033[2J");
         System.out.flush();
