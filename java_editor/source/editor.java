@@ -179,18 +179,12 @@ public class editor{
 		    break;
 	    }
 	    else{
-                char c = (char) input;
-                insert(c);
+                //char c = (char) input;
+                insert(input);
 		change=true;
 	    }
-	   // else    // System.out.println("kay: " + input + " (" + (char)input + ")");
-
-	    //print
-            //wait response
-            //if esceape brake
-            //if charcter add
-            //if movement change cordinates
-            //reprint
+	     //System.out.println("kay: " + input + " (" + (char)input + ")");
+             //break;
         }
     }
 
@@ -220,8 +214,39 @@ public class editor{
     }
     
 
-    public static void insert(char leter){
-        if(leter==' '){
+    public static void insert(int input){
+	if(input==127){
+            if(z>0 && z<=text.get(x).get(y).spaces){
+	        if(text.get(x).get(y).spaces>1){
+		    text.get(x).get(y).spaces--;
+	            z--;
+		    real_y--;
+	        }
+		else if (y!=0){
+		    text.get(x).get(y-1).word+= text.get(x).get(y).word;
+		    text.get(x).remove(y);
+                    real_y--;
+		    colibrateZY();
+         
+		}
+
+	    }
+	else{
+	     if(z==0 && y!=0){
+                  text.get(x).get(y-1).word =  text.get(x).get(y-1).word.substring(0,  text.get(x).get(y-1).word.length() - 1);
+	     }
+	     else if(z!=0){
+	     text.get(x).get(y).word= text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces-1) + text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces );
+	     real_y--;
+	     colibrateZY();
+	     }
+
+	}    
+	    
+	
+
+	}
+	else if((char) input==' '){
 	    if(z<=text.get(x).get(y).spaces){
                 text.get(x).get(y).spaces++;
 	        z++;
@@ -245,22 +270,31 @@ public class editor{
 	}
 	else{
 	
-	    if(z<text.get(x).get(y).spaces){
+	    if(z>0 && z<text.get(x).get(y).spaces){
                 text.get(x).get(y).spaces-=z;
-		text.get(x).add(y,new WordNode(String.valueOf(leter),z));
+		text.get(x).add(y,new WordNode(String.valueOf((char) input),z));
 		real_y++;
 		y++;
 		z=0;
 		//colibrateZY();
 	    }
 	    else{
-            
-                text.get(x).get(y).word =  text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces) + leter +  text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces);
- 
-		z++;
-		real_y++;
-
-		//colibrateZY();
+                if(z==0 && y!=0){
+                    text.get(x).get(y-1).word+=(char) input;
+		    real_y++;
+                   
+		}
+		else if (z!=0) {
+		    text.get(x).get(y).word =  text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces) + (char) input +  text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces);
+                    z++;
+		    real_y++;
+		}
+		else{
+                    text.get(x).get(y).word = (char)input + text.get(x).get(y).word;
+		    //z++;
+		    real_y++;
+		    colibrateZY();
+		}
 	    }
 	
 
