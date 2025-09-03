@@ -237,10 +237,33 @@ public class editor{
 		    cut_size++;
 	        }
 		text.get(x).get(y).word = text.get(x).get(y).word.substring(0, text.get(x).get(y).word.length() - cut_size);
-		//z++;
 		real_y++;
-                colibrateZY();
+		y++;
+		z=1;
+                //colibrateZY();
 	    }
+	}
+	else{
+	
+	    if(z<text.get(x).get(y).spaces){
+                text.get(x).get(y).spaces-=z;
+		text.get(x).add(y,new WordNode(String.valueOf(leter),z));
+		real_y++;
+		y++;
+		z=0;
+		//colibrateZY();
+	    }
+	    else{
+            
+                text.get(x).get(y).word =  text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces) + leter +  text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces);
+ 
+		z++;
+		real_y++;
+
+		//colibrateZY();
+	    }
+	
+
 	}
 
     }
