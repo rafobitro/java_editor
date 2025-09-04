@@ -1,333 +1,327 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 class WordNode{
-
-    public String word;
+    public StringBuilder word;
     public int spaces;
 
-
-    public WordNode(String string , int integer){
-	word=string;
-	spaces=integer;
-    }
-
-    public void changeWord(String newWord){
-        word=newWord;
-    }
-    public void changeSpaces(int newSpaces){
-        spaces=newSpaces;
-    }
-    
-    public String getWord(){
-        return word;
-    }
-
-    public int getSpaces(){
-        return spaces;
+    public WordNode(String word , int spaces){
+	    this.word=new StringBuilder(word);
+	    this.spaces=spaces;
     }
 }
 
 
 
 public class editor{
+    //constants
+	private static final int ESC = 27;
+    private static final int BACKSPACE = 127;
 
     
-    //declar array of links to strings
+    //main data structure of a editor
     static ArrayList<ArrayList<WordNode>> text = new ArrayList<>();
 
-    //line
-    static int x=0;
-    //
-    static int real_y=0;
-    //word
-    static int y=0;
-    //leter of word
-    static int z=0;
+    //courser codinates 
+    static int X=0;
+    static int Y=0;
+    static int wordIndex=0;
+    static int charIndex=0;
 
-    
-    public static void find_real_y(){
-	real_y=z;
-	for(int word_index=0;word_index<y;word_index++){
-	    real_y+=text.get(x).get(word_index).getWord().length();
-	    real_y+=text.get(x).get(word_index).getSpaces();
-	}
+	static void init(String file_name[]){
+        ArrayList<WordNode> l1 = new ArrayList<>();
+        l1.add(new WordNode("first", 0));
+        l1.add(new WordNode("second", 4));
+	l1.add(new WordNode("third", 4));
+        l1.add(new WordNode("forth", 4));
+	l1.add(new WordNode ("",1));
+        text.add(l1);
+
+        ArrayList<WordNode> l2 = new ArrayList<>();
+        l2.add(new WordNode("L2_first", 0));
+        l2.add(new WordNode("L2_second", 4));
+	l2.add(new WordNode("L2_third", 4));
+        l2.add(new WordNode("L2_forth", 4));
+        l2.add(new WordNode ("",1));
+        text.add(l2);
+
+	ArrayList<WordNode> l3 = new ArrayList<>();
+        l3.add(new WordNode("L3_first", 0));
+        l3.add(new WordNode("L3_second", 4));
+	l3.add(new WordNode("L3_third", 4));
+        l3.add(new WordNode("L3_forth", 4));
+        l3.add(new WordNode ("",1));
+        text.add(l3);
+
+	ArrayList<WordNode> l4 = new ArrayList<>();
+        l4.add(new WordNode("L4_first", 0));
+        l4.add(new WordNode("L4_second", 4));
+	l4.add(new WordNode("L4_third", 4));
+        l4.add(new WordNode("L4_forth", 4));
+        l4.add(new WordNode ("",1));
+	text.add(l4);
      
     }
 
-    public static void colibrateZY(){
+    
+    static void colibrateY(){
+	Y=charIndex;
+	    for(int word_index=0;word_index<wordIndex;word_index++){
+	        Y+=text.get(X).get(word_index).word.length();
+	        Y+=text.get(X).get(word_index).spaces;
+	    }
+    }
+
+    static void colibrateZY(){
         int line_length=0;
-	boolean breaked_loop=false;
-	for(int word_index=0;word_index<text.get(x).size();word_index++){
-	    int word_length=text.get(x).get(word_index).getWord().length();
-	    word_length+=text.get(x).get(word_index).getSpaces();
-	    if(line_length+word_length>real_y){
-	        y=word_index;
-		z=real_y-line_length;
-		breaked_loop=true;
-		break;
-	    }
-	    else{
+	    boolean breaked_loop=false;
+		for(int word_index=0;word_index<text.get(X).size();word_index++){
+	        //word length equals string.length+spaces
+			int word_length=text.get(X).get(word_index).word.length();
+	        word_length+=text.get(X).get(word_index).spaces;
+			
+	        if(line_length+word_length>Y){
+	            wordIndex=word_index;
+		        charIndex=Y-line_length;
+		        breaked_loop=true;
+		        break;
+	        }
+	        else{
                 line_length+=word_length;
+	        }
 	    }
-	}
-	if (!breaked_loop){
-	    y=text.get(x).size()-1;
-     	    z=text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces();
-	}
 
-    }
-
-    public static void movement_logic_DAWN(){
-        if(x<text.size()-1){
-	    x++;
-	    colibrateZY();
-	}
-	else{
-	    x=0;
-	    colibrateZY();
-	}
-    }
-
-    public static void movement_logic_UP(){
-       if(x>0){
-           x--;
-	   colibrateZY();
-       }
-       else{
-	   x=text.size()-1;
-	   colibrateZY();
-       }
-    }
-
-    public static void movement_logic_LEFT(){
-           if(z>0){
-	       z--;
-	       real_y--;
-	   }
-	   else{
-	       if(y==0){
-	           movement_logic_UP();
-                   y=text.get(x).size()-1;
-	       }
-	       else{ 
-	           y--;
-	           real_y--;
-	       }
-	       z=text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces();
-	       find_real_y();
-	   }
-    }
-
-    public static void movement_logic_RIGHT(){
-           if(z<text.get(x).get(y).getWord().length()-1+text.get(x).get(y).getSpaces()){
-	       z++;
-	       real_y++;
-	   }
-	   else{
-	       if(y==text.get(x).size()-1){ 
-		   movement_logic_DAWN();
-		   y=0;
-		   
-	       }
-	       else{ 
-	           y++;
-		   real_y++;
-	       }
-	       z=0;
-	       find_real_y();
-	   }
-    }
-
-    public static void editor_loop(Terminal terminal)throws Exception{
-        boolean change = true;
-	while(true){
-	    	    
-            if(change){
-                change=false;
-		print();
+		//if Y is longer then line set maxposibale value
+	    if (!breaked_loop){
+	        wordIndex=text.get(X).size()-1;
+     	    charIndex=text.get(X).get(wordIndex).word.length()-1+text.get(X).get(wordIndex).spaces;
 	    }
-            
-            int input= terminal.reader().read();
+    }
 
-
-	    if(input==27){
-	        int secondInput = terminal.reader().read();
-		if(secondInput==91){
-		    int thirdInput = terminal.reader().read();
-                    if(thirdInput == 65){ 	
-			movement_logic_UP();
-			change=true;
-		    }
-		    else if(thirdInput ==66){ 
-		        movement_logic_DAWN();	
-			change=true;
-		    }
-		    else if(thirdInput ==67){ 
-			movement_logic_RIGHT();
-			change=true;
-		    }
-		    else if(thirdInput ==68){ 
-			movement_logic_LEFT();
-			change=true;
-		    }
-		     System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");
-		}
-		else
-		    break;
+    static void movement_logic_DAWN(){
+        if(X<text.size()-1){
+	        X++;
+	        colibrateZY();
 	    }
 	    else{
-                //char c = (char) input;
-                insert(input);
-		change=true;
+	        X=0;
+	        colibrateZY();
 	    }
-	     //System.out.println("kay: " + input + " (" + (char)input + ")");
-             //break;
+    }
+
+    static void movement_logic_UP(){
+        if(X>0){
+            X--;
+	        colibrateZY();
+        }
+        else{
+	        X=text.size()-1;
+	        colibrateZY();
         }
     }
 
-    public static void init(String file_name[]){
-    
-        //linked list test
-	ArrayList<WordNode> line1 = new ArrayList<>();
-        WordNode word= new WordNode("first",0);
-	line1.add(word);
-        word=new WordNode("second",4);
-	line1.add(word);
-        text.add(line1);
-        ArrayList<WordNode> line2 = new ArrayList<>();
-        word=new WordNode("L2_first",0);
-	line2.add(word);
-        word=new WordNode("L2_second",4);
-	line2.add(word);
-        text.add(line2);
-	ArrayList<WordNode> line3 = new ArrayList<>();
-        word=new WordNode("L3_first",0);
-	line3.add(word);
-        word=new WordNode("L3_second",4);
-	line3.add(word);
-        text.add(line3);	//open file
-        //copy into array of links to string
-        //close file
-    }
-    
-
-    public static void insert(int input){
-	if(input==127){
-            if(z>0 && z<=text.get(x).get(y).spaces){
-	        if(text.get(x).get(y).spaces>1){
-		    text.get(x).get(y).spaces--;
-	            z--;
-		    real_y--;
-	        }
-		else if (y!=0){
-		    text.get(x).get(y-1).word+= text.get(x).get(y).word;
-		    text.get(x).remove(y);
-                    real_y--;
-		    colibrateZY();
-         
-		}
-
-	    }
-	else{
-	     if(z==0 && y!=0){
-                  text.get(x).get(y-1).word =  text.get(x).get(y-1).word.substring(0,  text.get(x).get(y-1).word.length() - 1);
-	     }
-	     else if(z!=0){
-	     text.get(x).get(y).word= text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces-1) + text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces );
-	     real_y--;
-	     colibrateZY();
-	     }
-
-	}    
-	    
-	
-
-	}
-	else if((char) input==' '){
-	    if(z<=text.get(x).get(y).spaces){
-                text.get(x).get(y).spaces++;
-	        z++;
-	        real_y++;
-	    }
-	    else{    
-                text.get(x).add(y+1,new WordNode("",1));
-		//WordNode word= new Wordnode("",1);
-		int cut_size=0;
-		for(int i=z+1;i<=text.get(x).get(y).word.length()+text.get(x).get(y).spaces;i++)
-		{
-		    text.get(x).get(y+1).word+=text.get(x).get(y).word.charAt(i-text.get(x).get(y).spaces-1);
-		    cut_size++;
-	        }
-		text.get(x).get(y).word = text.get(x).get(y).word.substring(0, text.get(x).get(y).word.length() - cut_size);
-		real_y++;
-		y++;
-		z=1;
-                //colibrateZY();
-	    }
-	}
-	else{
-	
-	    if(z>0 && z<text.get(x).get(y).spaces){
-                text.get(x).get(y).spaces-=z;
-		text.get(x).add(y,new WordNode(String.valueOf((char) input),z));
-		real_y++;
-		y++;
-		z=0;
-		//colibrateZY();
+    static void movement_logic_LEFT(){
+        if(charIndex>0){
+	        charIndex--;
+	        Y--;
 	    }
 	    else{
-                if(z==0 && y!=0){
-                    text.get(x).get(y-1).word+=(char) input;
-		    real_y++;
-                   
-		}
-		else if (z!=0) {
-		    text.get(x).get(y).word =  text.get(x).get(y).word.substring(0, z-text.get(x).get(y).spaces) + (char) input +  text.get(x).get(y).word.substring(z-text.get(x).get(y).spaces);
-                    z++;
-		    real_y++;
-		}
-		else{
-                    text.get(x).get(y).word = (char)input + text.get(x).get(y).word;
-		    //z++;
-		    real_y++;
-		    colibrateZY();
-		}
+	        if(wordIndex==0){
+	            movement_logic_UP();
+                wordIndex=text.get(X).size()-1;
+	        }
+	        else{ 
+	            wordIndex--;
+	            Y--;
+	        }
+			//move last character
+	        charIndex=text.get(X).get(wordIndex).word.length()-1+text.get(X).get(wordIndex).spaces;
+	        colibrateY();
 	    }
-	
-
-	}
-
     }
-    public static void print(){
-	System.out.print("\033[H\033[2J");
-        System.out.flush();
 
-
-	System.out.println("x "+ x +" real_Y "+real_y +" y "+ y + " z " + z);
-	for(int line_index=0; line_index<text.size();line_index++){
-            int word_index=0;
-	    for(WordNode word : text.get(line_index)){
-                String spaces="";
-		for(int i=0;i<word.getSpaces();i++)
-			spaces+=" ";
-                    if(line_index==x && word_index==y && z<word.getSpaces())
-  	                System.out.print(spaces.substring(0, z) +"\u001b[43m" + spaces.charAt(z) +"\u001b[0m" + spaces.substring(z+ 1));
-		    else
-		        System.out.print(spaces);
-                if(line_index==x && word_index==y && z>=word.getSpaces())
-		    System.out.print(word.getWord().substring(0, z-word.getSpaces()) +"\u001b[43m" + word.getWord().charAt(z-word.getSpaces()) +"\u001b[0m" + word.getWord().substring(z-word.getSpaces()+ 1));
-		else
-		    System.out.print(word.getWord());
-	        word_index++;
+    static void movement_logic_RIGHT(){
+        if(charIndex<text.get(X).get(wordIndex).word.length()-1+text.get(X).get(wordIndex).spaces){
+	        charIndex++;
+	        Y++;
 	    }
+	    else{
+	        if(wordIndex==text.get(X).size()-1){ 
+		        movement_logic_DAWN();
+		        wordIndex=0;
+		    }
+	        else{ 
+	            wordIndex++;
+		        Y++;
+	        }
+	        charIndex=0;
+	        colibrateY();
+	    }
+    }
 
-	    System.out.println();
+    static void editor_loop(Terminal terminal)throws Exception{
+        boolean change = true;
+	    while(true){	    
+            if(change){
+                change=false;
+		        print();
+	        }
+            
+            int input= terminal.reader().read();
+            //excape sequiance
+            if(input==ESC){
+	            int secondInput = terminal.reader().read();
+		        if(secondInput==91){
+		            int thirdInput = terminal.reader().read();
+                    if(thirdInput == 65){ 	
+			            movement_logic_UP();
+			            change=true;
+		            }
+		            else if(thirdInput ==66){ 
+		                movement_logic_DAWN();	
+			            change=true;
+		            }
+		            else if(thirdInput ==67){ 
+			            movement_logic_RIGHT();
+			            change=true;
+		            }
+		            else if(thirdInput ==68){ 
+			            movement_logic_LEFT();
+			            change=true;
+					}
+		            //for testing //System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");break;
+		        }
+		        else
+		            break;
+            }
+	        else{
+                insert(input);
+		        change=true;
+	        }
+	     //for testing //System.out.println("kay: " + input + " (" + (char)input + ")");break;
+        }
+    }
+
+
+	//helper functions for insert function
+	static boolean isInWord(){
+		return (charIndex>text.get(X).get(wordIndex).spaces);
 	}
-        //print array of links to string
-    }  
+
+public static void insert(int input){
+	if(input==BACKSPACE){
+		if(charIndex==0){
+	                if(wordIndex==0){
+				
+			}
+			else{
+				text.get(X).get(wordIndex - 1).word.deleteCharAt(text.get(X).get(wordIndex - 1).word.length() - 1);
+				if(text.get(X).get(wordIndex-1).word.length() ==0){
+					text.get(X).get(wordIndex).spaces+=text.get(X).get(wordIndex-1).spaces;
+					text.get(X).remove(wordIndex-1);}
+					Y--;
+				
+				    colibrateZY();
+			    }
+		    }
+		else if (isInWord()){
+			text.get(X).get(wordIndex).word.deleteCharAt(charIndex-text.get(X).get(wordIndex).spaces-1);
+			Y--;
+			charIndex--;
+		}
+		else if(!isInWord()){
+			if(text.get(X).get(wordIndex).spaces>1 || wordIndex==0 && Y!=0){
+				text.get(X).get(wordIndex).spaces--;
+				Y--;
+				charIndex--;
+			}
+			else if(wordIndex!=0){
+				text.get(X).get(wordIndex-1).word.append(text.get(X).get(wordIndex).word);
+				text.get(X).remove(wordIndex);
+				Y--;
+				colibrateZY();
+			}
+		}
+	} 
+    else if((char) input==' '){
+	    if(isInWord()){
+                text.get(X).add(wordIndex+1,new WordNode("",1));
+		        
+		int cut_size=0;
+		for(int i=charIndex+1;i<=text.get(X).get(wordIndex).word.length()+text.get(X).get(wordIndex).spaces;i++){
+                    text.get(X).get(wordIndex + 1).word.append(text.get(X).get(wordIndex).word.charAt(i - text.get(X).get(wordIndex).spaces - 1));
+	            cut_size++;
+			}
+
+			int start = text.get(X).get(wordIndex).word.length() - cut_size;
+            text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
+				
+		    Y++;
+		    wordIndex++;
+		    charIndex=1;
+		}
+	    else{
+            text.get(X).get(wordIndex).spaces++;
+	        charIndex++;
+	        Y++;
+	    }
+	}
+	else /* character */{
+        if (charIndex == 0 && wordIndex!=0) {
+            text.get(X).get(wordIndex - 1).word.append((char) input);
+            Y++;
+        } 
+	//isInWord or next to word 
+        else if (charIndex>=text.get(X).get(wordIndex).spaces ) {
+            text.get(X).get(wordIndex).word.insert(charIndex-text.get(X).get(wordIndex).spaces,(char) input);
+            Y++;
+            charIndex++;
+	} 
+	    else {
+	        text.get(X).get(wordIndex).spaces -= charIndex;
+	        text.get(X).add(
+	        wordIndex,
+	        new WordNode(new StringBuilder().append((char) input).toString(), charIndex));
+	        Y++;
+	        wordIndex++;
+	        charIndex = 0;
+	    }
+	}
+}
+	
+public static void print(){
+	System.out.print("\033[H\033[2J");
+	System.out.flush();
+
+	System.out.println("X " + X + " real_Y " + Y + " wordIndex " + wordIndex + " charIndex " + charIndex);
+
+	for (int line_index = 0; line_index < text.size(); line_index++) {
+		int wIndex = 0;
+		for (WordNode word : text.get(line_index)) {
+			String spaces = " ".repeat(word.spaces);
+			
+			if (line_index == X && wIndex == wordIndex && charIndex < word.spaces){ 
+				System.out.print(spaces.substring(0, charIndex) +"\u001b[43m" + spaces.charAt(charIndex) + "\u001b[0m" +spaces.substring(charIndex + 1));
+			} 
+			else {
+				System.out.print(spaces);
+			}
+
+			if (line_index == X && wIndex == wordIndex && charIndex >= word.spaces) {
+				int pos = charIndex - word.spaces;
+				System.out.print(
+				word.word.substring(0, pos) +"\u001b[43m" + word.word.charAt(pos) + "\u001b[0m" +word.word.substring(pos + 1));
+			} 
+			else {
+				System.out.print(word.word);
+			}
+			wIndex++;
+		}
+		System.out.println();
+	}
+}
+
 
     public static void main (String args[])throws Exception{
 
@@ -339,7 +333,7 @@ public class editor{
        // print();
         Terminal terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
-	editor_loop(terminal);
+	    editor_loop(terminal);
 	//reed args file
         //copy into memmory
         //editor_loop
