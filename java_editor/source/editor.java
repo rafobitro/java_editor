@@ -10,16 +10,35 @@ class WordNode{
 	    this.word=new StringBuilder(word);
 	    this.spaces=spaces;
     }
+
+    public WordNode(StringBuilder word , int spaces){
+	    this.word=word;
+	    this.spaces=spaces;
+    }
+
+
+    public WordNode(WordNode wordNode){
+           word=wordNode.word;
+	   spaces=wordNode.spaces;
+    }
 }
 
 
 
 public class editor{
     //constants
-	private static final int ESC = 27;
-    private static final int BACKSPACE = 127;
-
+    static final int ESC = 27;
+    static final int BACKSPACE = 127;
+    static final int BRACKET = 91;
+    static final int ARROW_UP = 65;
+    static final int ARROW_DOWN = 66;
+    static final int ARROW_RIGHT = 67;
+    static final int ARROW_LEFT = 68;
     
+    static final String CLEAR_SCREEN = "\033[H\033[2J";
+    static final String RESET = "\u001b[0m";
+    static final String ANSI_BG_YELLOW = "\u001b[43m";
+
     //main data structure of a editor
     static ArrayList<ArrayList<WordNode>> text = new ArrayList<>();
 
@@ -172,34 +191,34 @@ public class editor{
             //excape sequiance
             if(input==ESC){
 	            int secondInput = terminal.reader().read();
-		        if(secondInput==91){
-		            int thirdInput = terminal.reader().read();
-                    if(thirdInput == 65){ 	
+		    if(secondInput==BRACKET){
+		        int thirdInput = terminal.reader().read();
+                            if(thirdInput == ARROW_UP){ 	
 			            movement_logic_UP();
 			            change=true;
 		            }
-		            else if(thirdInput ==66){ 
+		            else if(thirdInput ==ARROW_DOWN){ 
 		                movement_logic_DAWN();	
 			            change=true;
 		            }
-		            else if(thirdInput ==67){ 
+		            else if(thirdInput ==ARROW_RIGHT){ 
 			            movement_logic_RIGHT();
 			            change=true;
 		            }
-		            else if(thirdInput ==68){ 
+		            else if(thirdInput ==ARROW_LEFT){ 
 			            movement_logic_LEFT();
 			            change=true;
-					}
-		            //for testing //System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");break;
+				}
+		            //System.out.println("kay: " + input +" and " + secondInput + " and " + thirdInput + " ("+ (char)input + ")");break;
 		        }
 		        else
 		            break;
             }
-	        else{
-                insert(input);
-		        change=true;
+	    else{
+                    insert(input);
+		    change=true;
 	        }
-	     //for testing //System.out.println("kay: " + input + " (" + (char)input + ")");break;
+	    // System.out.println("kay: " + input + " (" + (char)input + ")");break;
         }
     }
 
@@ -213,7 +232,22 @@ public static void insert(int input){
 	if(input==BACKSPACE){
 		if(charIndex==0){
 	                if(wordIndex==0){
+			   if(X!=0){
+				text.get(X).get(wordIndex).spaces+=text.get(X-1).get(text.get(X-1).size()-1).spaces;
+				int old_size=text.get(X-1).size()-1;
+				text.get(X-1).remove(old_size);
+				for(int wordI=0;wordI<text.get(X).size();wordI++){
+			            text.get(X-1).add(new WordNode(text.get(X).get(wordI)));
+				}
+				text.remove(X);
+
+				X--;
+				wordIndex=old_size;
+				charIndex=0;
+				colibrateY();
 				
+                           }
+		
 			}
 			else{
 				text.get(X).get(wordIndex - 1).word.deleteCharAt(text.get(X).get(wordIndex - 1).word.length() - 1);
@@ -243,8 +277,39 @@ public static void insert(int input){
 				colibrateZY();
 			}
 		}
-	} 
-    else if((char) input==' '){
+	}
+	else if(input == 13){
+            if(isInWord()){
+	         text.get(X).add(wordIndex+1,new WordNode("",0));
+		        
+		int cut_size=0;
+		for(int i=charIndex+1;i<=text.get(X).get(wordIndex).word.length()+text.get(X).get(wordIndex).spaces;i++){
+                    text.get(X).get(wordIndex + 1).word.append(text.get(X).get(wordIndex).word.charAt(i - text.get(X).get(wordIndex).spaces - 1));
+	            cut_size++;
+			}
+
+			int start = text.get(X).get(wordIndex).word.length() - cut_size;
+                        text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
+				
+		    Y++;
+		    wordIndex++;
+		    charIndex=0;
+	    }
+            text.add(X+1,new ArrayList<WordNode>());
+	    for(int wordI=wordIndex;wordI<text.get(X).size();wordI++){
+		text.get(X+1).add(new WordNode(text.get(X).get(wordI)));
+	    }
+	    for(int wordI=text.get(X).size()-2;wordI>=wordIndex;wordI--)
+		text.get(X).remove(wordI);
+	    text.get(X).get(wordIndex).spaces+=charIndex;
+	    text.get(X+1).get(0).spaces-=charIndex;
+	    X++;
+	    wordIndex=0;
+            charIndex=0;
+	    Y=0;
+	    
+	}
+        else if((char) input==' '){
 	    if(isInWord()){
                 text.get(X).add(wordIndex+1,new WordNode("",1));
 		        
@@ -291,7 +356,7 @@ public static void insert(int input){
 }
 	
 public static void print(){
-	System.out.print("\033[H\033[2J");
+	System.out.print(CLEAR_SCREEN);
 	System.out.flush();
 
 	System.out.println("X " + X + " real_Y " + Y + " wordIndex " + wordIndex + " charIndex " + charIndex);
@@ -302,7 +367,7 @@ public static void print(){
 			String spaces = " ".repeat(word.spaces);
 			
 			if (line_index == X && wIndex == wordIndex && charIndex < word.spaces){ 
-				System.out.print(spaces.substring(0, charIndex) +"\u001b[43m" + spaces.charAt(charIndex) + "\u001b[0m" +spaces.substring(charIndex + 1));
+				System.out.print(spaces.substring(0, charIndex) +ANSI_BG_YELLOW + spaces.charAt(charIndex) + RESET +spaces.substring(charIndex + 1));
 			} 
 			else {
 				System.out.print(spaces);
@@ -311,7 +376,7 @@ public static void print(){
 			if (line_index == X && wIndex == wordIndex && charIndex >= word.spaces) {
 				int pos = charIndex - word.spaces;
 				System.out.print(
-				word.word.substring(0, pos) +"\u001b[43m" + word.word.charAt(pos) + "\u001b[0m" +word.word.substring(pos + 1));
+				word.word.substring(0, pos) +ANSI_BG_YELLOW + word.word.charAt(pos) + RESET +word.word.substring(pos + 1));
 			} 
 			else {
 				System.out.print(word.word);
