@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 class WordNode{
     public StringBuilder word;
@@ -42,46 +45,70 @@ public class editor{
     //main data structure of a editor
     static ArrayList<ArrayList<WordNode>> text = new ArrayList<>();
 
+    //main data structor for coloring 
+    static ArrayList<ArrayList<String>> colors = new ArrayList<>();
+
     //courser codinates 
     static int X=0;
     static int Y=0;
     static int wordIndex=0;
     static int charIndex=0;
 
-	static void init(String file_name[]){
-        ArrayList<WordNode> l1 = new ArrayList<>();
-        l1.add(new WordNode("first", 0));
-        l1.add(new WordNode("second", 4));
-	l1.add(new WordNode("third", 4));
-        l1.add(new WordNode("forth", 4));
-	l1.add(new WordNode ("",1));
-        text.add(l1);
+static void init(String file_name[]){
+        
+   try (BufferedReader reader = new BufferedReader(new FileReader(file_name[0]))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+	    int n=line.length();
 
-        ArrayList<WordNode> l2 = new ArrayList<>();
-        l2.add(new WordNode("L2_first", 0));
-        l2.add(new WordNode("L2_second", 4));
-	l2.add(new WordNode("L2_third", 4));
-        l2.add(new WordNode("L2_forth", 4));
-        l2.add(new WordNode ("",1));
-        text.add(l2);
+	    
+	    ArrayList<WordNode>   wordLine = new ArrayList<>();
+	    ArrayList<String> colorLine = new ArrayList<>();
+	    String word="";
+	    int spaces=0;
 
-	ArrayList<WordNode> l3 = new ArrayList<>();
-        l3.add(new WordNode("L3_first", 0));
-        l3.add(new WordNode("L3_second", 4));
-	l3.add(new WordNode("L3_third", 4));
-        l3.add(new WordNode("L3_forth", 4));
-        l3.add(new WordNode ("",1));
-        text.add(l3);
+	    for(int i=0;i<n;i++){
+               
+		if(line.charAt(i)==' '){
+		    if(word.length()!=0){
+			if(word.equals("int"))
+			    colorLine.add(new String("\u001b[31m"));    
+			else
+			    colorLine.add(new String("\u001b[0m"));    
+			wordLine.add(new WordNode(word,spaces));
+			spaces=1;
+			word="";
+		    }	    
+		    else spaces++;
+		}
+		else{
+                    word+=line.charAt(i);
+		}
+		
 
-	ArrayList<WordNode> l4 = new ArrayList<>();
-        l4.add(new WordNode("L4_first", 0));
-        l4.add(new WordNode("L4_second", 4));
-	l4.add(new WordNode("L4_third", 4));
-        l4.add(new WordNode("L4_forth", 4));
-        l4.add(new WordNode ("",1));
-	text.add(l4);
-     
+	    }
+
+	    if(word.length()!=0){
+		if(word.equals("int"))
+		    colorLine.add(new String("\u001b[31m"));    
+		else
+		    colorLine.add(new String("\u001b[0m"));    
+                wordLine.add(new WordNode(word, spaces));
+	        wordLine.add(new WordNode ("",1));
+		colorLine.add(new String("\u001b[0m"));    
+            }
+	    else{
+                wordLine.add(new WordNode("",spaces+1));
+		colorLine.add(new String("\u001b[0m"));    
+	    }
+	        colors.add(colorLine);
+	        text.add(wordLine);
+	}
+	
+    } catch (IOException e) {
+        e.printStackTrace();
     }
+}
 
     
     static void colibrateY(){
@@ -363,9 +390,11 @@ public static void print(){
 
 	for (int line_index = 0; line_index < text.size(); line_index++) {
 		int wIndex = 0;
-		for (WordNode word : text.get(line_index)) {
+		for (int word_index=0; word_index<text.get(line_index).size();word_index++) {
+			WordNode word= text.get(line_index).get(word_index);
+			String color=colors.get(line_index).get(word_index);
 			String spaces = " ".repeat(word.spaces);
-			
+		        	
 			if (line_index == X && wIndex == wordIndex && charIndex < word.spaces){ 
 				System.out.print(spaces.substring(0, charIndex) +ANSI_BG_YELLOW + spaces.charAt(charIndex) + RESET +spaces.substring(charIndex + 1));
 			} 
@@ -375,11 +404,10 @@ public static void print(){
 
 			if (line_index == X && wIndex == wordIndex && charIndex >= word.spaces) {
 				int pos = charIndex - word.spaces;
-				System.out.print(
-				word.word.substring(0, pos) +ANSI_BG_YELLOW + word.word.charAt(pos) + RESET +word.word.substring(pos + 1));
+				System.out.print(color+word.word.substring(0, pos) +ANSI_BG_YELLOW + word.word.charAt(pos) +RESET+ color +word.word.substring(pos + 1)+RESET);
 			} 
 			else {
-				System.out.print(word.word);
+				System.out.print(color+word.word+RESET);
 			}
 			wIndex++;
 		}
