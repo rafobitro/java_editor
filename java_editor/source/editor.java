@@ -34,6 +34,7 @@ public class editor{
     //constants
     static final int ESC = 27;
     static final int BACKSPACE = 127;
+    static final int ENTER=13;
     static final int BRACKET = 91;
     static final int ARROW_UP = 65;
     static final int ARROW_DOWN = 66;
@@ -337,7 +338,7 @@ public static void insert(int input){
 			}
 		}
 	}
-	else if(input == 13){
+	else if(input == ENTER){
             if(isInWord()){
 	         text.get(X).add(wordIndex+1,new WordNode("",0));
 		        
