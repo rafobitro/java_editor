@@ -1,9 +1,11 @@
 import java.util.ArrayList;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
+import java.util.HashMap;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 
 class WordNode{
     public StringBuilder word;
@@ -48,6 +50,11 @@ public class editor{
     //main data structor for coloring 
     static ArrayList<ArrayList<String>> colors = new ArrayList<>();
 
+    //unordered map for sintax coloring
+    static HashMap<String, String> word_to_color = new HashMap<>();
+    
+    static String defoultColor="\u001b[37m";
+
     //courser codinates 
     static int X=0;
     static int Y=0;
@@ -55,7 +62,7 @@ public class editor{
     static int charIndex=0;
 
 static void init(String file_name[]){
-        
+   initSyntaxColoring("../configs/jav.txt");     
    try (BufferedReader reader = new BufferedReader(new FileReader(file_name[0]))) {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -71,10 +78,10 @@ static void init(String file_name[]){
                
 		if(line.charAt(i)==' '){
 		    if(word.length()!=0){
-			if(word.equals("int"))
-			    colorLine.add(new String("\u001b[31m"));    
+			if(word_to_color.containsKey(word))
+			    colorLine.add(new String(word_to_color.get(word)));    
 			else
-			    colorLine.add(new String("\u001b[0m"));    
+			    colorLine.add(new String(defoultColor));    
 			wordLine.add(new WordNode(word,spaces));
 			spaces=1;
 			word="";
@@ -89,17 +96,17 @@ static void init(String file_name[]){
 	    }
 
 	    if(word.length()!=0){
-		if(word.equals("int"))
-		    colorLine.add(new String("\u001b[31m"));    
+		if(word_to_color.containsKey(word))
+		    colorLine.add(new String(word_to_color.get(word)));    
 		else
-		    colorLine.add(new String("\u001b[0m"));    
+		    colorLine.add(new String(defoultColor));    
                 wordLine.add(new WordNode(word, spaces));
 	        wordLine.add(new WordNode ("",1));
-		colorLine.add(new String("\u001b[0m"));    
+		colorLine.add(new String(defoultColor));    
             }
 	    else{
                 wordLine.add(new WordNode("",spaces+1));
-		colorLine.add(new String("\u001b[0m"));    
+		colorLine.add(new String(defoultColor));    
 	    }
 	        colors.add(colorLine);
 	        text.add(wordLine);
@@ -110,6 +117,31 @@ static void init(String file_name[]){
     }
 }
 
+static void initSyntaxColoring(String filename){
+    word_to_color.put("int","\u001b[31m");
+    word_to_color.put("try","\u001b[34m");
+    try(BufferedReader reader =  new BufferedReader(new FileReader(filename))){
+        String line;
+	while((line = reader.readLine())!= null){
+	    String[] parts=line.split("\\s+");
+	    if (parts.length == 2) {
+                String keyword   = parts[0];
+                String colorCode = parts[1];
+
+                // convert "\u001b" (text) → real ESC char
+                colorCode = colorCode.replace("\\u001b", "\u001b");
+
+                word_to_color.put(keyword, colorCode);
+
+	    }
+
+	}
+
+
+    }catch(IOException e) {
+	e.printStackTrace();
+    }
+}
     
     static void colibrateY(){
 	Y=charIndex;
