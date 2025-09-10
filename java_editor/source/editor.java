@@ -79,10 +79,7 @@ static void init(String file_name[]){
                
 		if(line.charAt(i)==' '){
 		    if(word.length()!=0){
-			if(word_to_color.containsKey(word))
-			    colorLine.add(new String(word_to_color.get(word)));    
-			else
-			    colorLine.add(new String(defoultColor));    
+			colorLine.add(getColor(word.toString()));    
 			wordLine.add(new WordNode(word,spaces));
 			spaces=1;
 			word="";
@@ -118,9 +115,10 @@ static void init(String file_name[]){
     }
 }
 
+
 static void initSyntaxColoring(String filename){
-    word_to_color.put("int","\u001b[31m");
-    word_to_color.put("try","\u001b[34m");
+   // word_to_color.put("int","\u001b[31m");
+    //word_to_color.put("try","\u001b[34m");
     try(BufferedReader reader =  new BufferedReader(new FileReader(filename))){
         String line;
 	while((line = reader.readLine())!= null){
@@ -142,6 +140,12 @@ static void initSyntaxColoring(String filename){
     }catch(IOException e) {
 	e.printStackTrace();
     }
+}
+
+static String getColor(String word){
+	if(word_to_color.containsKey(word))
+	    return word_to_color.get(word);    
+	return defoultColor;    
 }
     
     static void colibrateY(){
@@ -296,10 +300,13 @@ public static void insert(int input){
 				text.get(X).get(wordIndex).spaces+=text.get(X-1).get(text.get(X-1).size()-1).spaces;
 				int old_size=text.get(X-1).size()-1;
 				text.get(X-1).remove(old_size);
+				colors.get(X-1).remove(old_size);
 				for(int wordI=0;wordI<text.get(X).size();wordI++){
 			            text.get(X-1).add(new WordNode(text.get(X).get(wordI)));
+				    colors.get(X-1).add(new String (colors.get(X).get(wordI)));
 				}
 				text.remove(X);
+				colors.remove(X);
 
 				X--;
 				wordIndex=old_size;
@@ -310,10 +317,14 @@ public static void insert(int input){
 		
 			}
 			else{
+				
 				text.get(X).get(wordIndex - 1).word.deleteCharAt(text.get(X).get(wordIndex - 1).word.length() - 1);
+				colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString()));
 				if(text.get(X).get(wordIndex-1).word.length() ==0){
 					text.get(X).get(wordIndex).spaces+=text.get(X).get(wordIndex-1).spaces;
-					text.get(X).remove(wordIndex-1);}
+					text.get(X).remove(wordIndex-1);
+					colors.get(X).remove(wordIndex-1);
+				}
 					Y--;
 				
 				    colibrateZY();
@@ -321,6 +332,7 @@ public static void insert(int input){
 		    }
 		else if (isInWord()){
 			text.get(X).get(wordIndex).word.deleteCharAt(charIndex-text.get(X).get(wordIndex).spaces-1);
+			colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString()));
 			Y--;
 			charIndex--;
 		}
@@ -332,7 +344,9 @@ public static void insert(int input){
 			}
 			else if(wordIndex!=0){
 				text.get(X).get(wordIndex-1).word.append(text.get(X).get(wordIndex).word);
+				colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString()));
 				text.get(X).remove(wordIndex);
+				colors.get(X).remove(wordIndex);
 				Y--;
 				colibrateZY();
 			}
@@ -340,27 +354,31 @@ public static void insert(int input){
 	}
 	else if(input == ENTER){
             if(isInWord()){
-	         text.get(X).add(wordIndex+1,new WordNode("",0));
-		        
+	        text.get(X).add(wordIndex+1,new WordNode("",0));
 		int cut_size=0;
 		for(int i=charIndex+1;i<=text.get(X).get(wordIndex).word.length()+text.get(X).get(wordIndex).spaces;i++){
                     text.get(X).get(wordIndex + 1).word.append(text.get(X).get(wordIndex).word.charAt(i - text.get(X).get(wordIndex).spaces - 1));
 	            cut_size++;
-			}
-
-			int start = text.get(X).get(wordIndex).word.length() - cut_size;
-                        text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
+		}
+		    colors.get(X).add(wordIndex+1,getColor(text.get(X).get(wordIndex + 1).word.toString()));
+		    int start = text.get(X).get(wordIndex).word.length() - cut_size;
+                    text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
+		    colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString()));
 				
 		    Y++;
 		    wordIndex++;
 		    charIndex=0;
 	    }
             text.add(X+1,new ArrayList<WordNode>());
+	    colors.add(X+1,new ArrayList<String>());
 	    for(int wordI=wordIndex;wordI<text.get(X).size();wordI++){
 		text.get(X+1).add(new WordNode(text.get(X).get(wordI)));
+		colors.get(X+1).add(new String(colors.get(X).get(wordI)));
 	    }
-	    for(int wordI=text.get(X).size()-2;wordI>=wordIndex;wordI--)
+	    for(int wordI=text.get(X).size()-2;wordI>=wordIndex;wordI--){
 		text.get(X).remove(wordI);
+		colors.get(X).remove(wordI);
+	    }
 	    text.get(X).get(wordIndex).spaces+=charIndex;
 	    text.get(X+1).get(0).spaces-=charIndex;
 	    X++;
@@ -377,11 +395,13 @@ public static void insert(int input){
 		for(int i=charIndex+1;i<=text.get(X).get(wordIndex).word.length()+text.get(X).get(wordIndex).spaces;i++){
                     text.get(X).get(wordIndex + 1).word.append(text.get(X).get(wordIndex).word.charAt(i - text.get(X).get(wordIndex).spaces - 1));
 	            cut_size++;
-			}
-
-			int start = text.get(X).get(wordIndex).word.length() - cut_size;
-            text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
+		}
+		colors.get(X).add(wordIndex+1,getColor(text.get(X).get(wordIndex + 1).word.toString()));
+		
+		int start = text.get(X).get(wordIndex).word.length() - cut_size;
+                text.get(X).get(wordIndex).word.delete(start, text.get(X).get(wordIndex).word.length());
 				
+		colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString()));
 		    Y++;
 		    wordIndex++;
 		    charIndex=1;
@@ -395,19 +415,20 @@ public static void insert(int input){
 	else /* character */{
         if (charIndex == 0 && wordIndex!=0) {
             text.get(X).get(wordIndex - 1).word.append((char) input);
+	    colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString()));
             Y++;
         } 
 	//isInWord or next to word 
         else if (charIndex>=text.get(X).get(wordIndex).spaces ) {
             text.get(X).get(wordIndex).word.insert(charIndex-text.get(X).get(wordIndex).spaces,(char) input);
-            Y++;
+	    colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString())); 
+	    Y++;
             charIndex++;
 	} 
 	    else {
 	        text.get(X).get(wordIndex).spaces -= charIndex;
-	        text.get(X).add(
-	        wordIndex,
-	        new WordNode(new StringBuilder().append((char) input).toString(), charIndex));
+	        text.get(X).add(wordIndex,new WordNode(new StringBuilder().append((char) input).toString(), charIndex));
+		colors.get(X).add(wordIndex,getColor(text.get(X).get(wordIndex).word.toString()));
 	        Y++;
 	        wordIndex++;
 	        charIndex = 0;

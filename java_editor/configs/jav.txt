@@ -1,4 +1,4 @@
-abstract \u001b[35m
+abstract \u001b[34m
 assert \u001b[37m
 boolean \u001b[35m
 break \u001b[31m
@@ -6,7 +6,7 @@ byte \u001b[35m
 case \u001b[34m
 catch \u001b[34m
 char \u001b[35m
-class \u001b[35m
+class \u001b[34m
 const \u001b[35m
 continue \u001b[31m
 default \u001b[34m
@@ -17,7 +17,7 @@ enum \u001b[34m
 extends \u001b[34m
 final \u001b[34m
 finally \u001b[34m
-float \u001b[34m
+float \u001b[35m
 for \u001b[34m
 goto \u001b[37m
 if \u001b[34m
