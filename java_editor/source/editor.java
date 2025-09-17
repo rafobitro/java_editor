@@ -29,7 +29,11 @@ class WordNode{
     public WordNode(WordNode wordNode){ 
         word=wordNode.word; 
         spaces=wordNode.spaces; 
-    } 
+    }
+
+    public int size(){
+        return word.length()+spaces;
+    }
 } 
  
  
@@ -362,68 +366,125 @@ static void initDelimiters(){
  static boolean isInWord(){ 
   return (charIndex>text.get(X).get(wordIndex).spaces); 
  } 
- 
+
+public static boolean mergeWords(){
+    if(wordIndex==0 || delimiters.contains(text.get(X).get(wordIndex-1).word.charAt(0)) || delimiters.contains(text.get(X).get(wordIndex).word.charAt(0)))
+        return false;
+    text.get(X).get(wordIndex-1).word.append(text.get(X).get(wordIndex).word);
+    colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString())); 
+    text.get(X).remove(wordIndex); 
+    colors.get(X).remove(wordIndex);
+    return true;
+}
+
+public static boolean mergeWords(int X, int wordIndex){
+    if(wordIndex==0 || delimiters.contains(text.get(X).get(wordIndex-1).word.charAt(0)) || delimiters.contains(text.get(X).get(wordIndex).word.charAt(0)))
+        return false;
+    text.get(X).get(wordIndex-1).word.append(text.get(X).get(wordIndex).word);
+    colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString())); 
+    text.get(X).remove(wordIndex); 
+    colors.get(X).remove(wordIndex);
+    return true;
+}
+
+public static void mergeLines(){
+    
+   if(X==0)
+       return;
+    int old_size=text.get(X-1).size()-1; 
+    int old_spaces= text.get(X-1).get(old_size).spaces-1;
+    text.get(X-1).remove(old_size);
+    colors.get(X-1).remove(old_size);
+    
+    text.get(X).get(0).spaces+=old_spaces;
+    text.get(X-1).add(new WordNode(text.get(X).get(0))); 
+    colors.get(X-1).add(new String (colors.get(X).get(0))); 
+    
+    if(text.get(X-1).get(old_size).spaces==0){
+        int oldWordSize=text.get(X).get(0).size();
+	if(mergeWords(X-1,old_size)){
+	    old_size--;
+	    charIndex=text.get(X-1).get(old_size).size()-oldWordSize;
+	}else 
+		charIndex=0;
+    }else
+	charIndex=old_spaces;
+    
+     
+    for(int i=1;i<text.get(X).size();i++){
+        text.get(X-1).add(new WordNode(text.get(X).get(i))); 
+        colors.get(X-1).add(new String (colors.get(X).get(i))); 
+    }
+    text.remove(X);
+    colors.remove(X);
+    X--;
+    wordIndex=old_size;
+    colibrateY();
+}
+
+public static void delateChar(){
+    if(!isInWord()){
+        text.get(X).get(wordIndex).spaces--;
+        if(text.get(X).get(wordIndex).spaces==0){
+	    int oldWordSize=text.get(X).get(wordIndex).size(); 
+	    if(mergeWords()){
+	        wordIndex--;
+		charIndex=text.get(X).get(wordIndex).size()-oldWordSize;
+	    }
+	    else
+		charIndex--;
+	}
+	else
+	   charIndex--;
+    }
+    else{
+        text.get(X).get(wordIndex).word.deleteCharAt(charIndex-text.get(X).get(wordIndex).spaces-1);
+	colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString()));
+    	charIndex--;
+    }
+    Y--;
+}
+
+public static void delatePrevChar(){
+    if(text.get(X).get(wordIndex-1).word.length()==1){
+    	if(text.get(X).get(wordIndex-1).spaces==0 && text.get(X).get(wordIndex).spaces==0){
+	    text.get(X).remove(wordIndex-1);
+	    colors.get(X).remove(wordIndex-1);
+	    int oldWordSize=text.get(X).get(wordIndex-1).size();
+	    if(mergeWords(X,wordIndex-1)){
+		wordIndex--;
+		charIndex=text.get(X).get(wordIndex-1).size()-oldWordSize;
+         }
+	}
+	else{
+	    text.get(X).get(wordIndex).spaces+=text.get(X).get(wordIndex-1).spaces;
+	    charIndex+=text.get(X).get(wordIndex-1).spaces;
+	    text.get(X).remove(wordIndex-1);
+	    colors.get(X).remove(wordIndex-1);
+	}
+	wordIndex--;
+    }
+    else{
+        text.get(X).get(wordIndex-1).word.deleteCharAt(text.get(X).get(wordIndex-1).word.length()-1);
+        colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex-1).word.toString()));
+    }
+    Y--;
+}
+
+
+
+
 public static void insert(int input){ 
     if(input==BACKSPACE){ 
-        if(charIndex==0){ 
-            if(wordIndex==0){ 
-                if(X!=0){
-		    int old_spaces= text.get(X-1).get(text.get(X-1).size()-1).spaces;
-                    text.get(X).get(wordIndex).spaces+=old_spaces; 
-                    int old_size=text.get(X-1).size()-1; 
-                    text.get(X-1).remove(old_size); 
-                    colors.get(X-1).remove(old_size); 
-                    for(int wordI=0;wordI<text.get(X).size();wordI++){ 
-                        text.get(X-1).add(new WordNode(text.get(X).get(wordI))); 
-                        colors.get(X-1).add(new String (colors.get(X).get(wordI))); 
-                    } 
-                    text.remove(X); 
-                    colors.remove(X); 
- 
-                    X--; 
-                    wordIndex=old_size; 
-                    charIndex=old_spaces; 
-                    colibrateY(); 
-     
-                } 
-   
-            } 
-            else{ 
-     
-                text.get(X).get(wordIndex - 1).word.deleteCharAt(text.get(X).get(wordIndex - 1).word.length() - 1); 
-                colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString())); 
-                if(text.get(X).get(wordIndex-1).word.length() ==0){ 
-                    text.get(X).get(wordIndex).spaces+=text.get(X).get(wordIndex-1).spaces; 
-                    text.get(X).remove(wordIndex-1); 
-                    colors.get(X).remove(wordIndex-1); 
-                } 
-                Y--; 
-     
-                colibrateZY(); 
-            } 
-        } 
-        else if (isInWord()){ 
-            text.get(X).get(wordIndex).word.deleteCharAt(charIndex-text.get(X).get(wordIndex).spaces-1); 
-            colors.get(X).set(wordIndex,getColor(text.get(X).get(wordIndex).word.toString())); 
-            Y--; 
-            charIndex--; 
-        } 
-        else if(!isInWord()){ 
-            if(text.get(X).get(wordIndex).spaces>1 || wordIndex==0 && Y!=0 ||delimiters.contains(text.get(X).get(wordIndex).word.charAt(0))||delimiters.contains(text.get(X).get(wordIndex-1).word.charAt(0))){ 
-                text.get(X).get(wordIndex).spaces--; 
-                Y--; 
-                charIndex--; 
-            } 
-            else if(wordIndex!=0){ 
-                text.get(X).get(wordIndex-1).word.append(text.get(X).get(wordIndex).word); 
-                colors.get(X).set(wordIndex-1,getColor(text.get(X).get(wordIndex - 1).word.toString())); 
-                text.get(X).remove(wordIndex); 
-                colors.get(X).remove(wordIndex); 
-                Y--; 
-                colibrateZY(); 
-            } 
-        } 
- } 
+	if(Y==0) mergeLines();
+	else if(charIndex==0)delatePrevChar();
+	else delateChar();
+
+//	X=0;
+//	Y=0;
+//	wordIndex=0;
+//	charIndex=0;
+    } 
  else if(input == ENTER){ 
             if(isInWord()){ 
          text.get(X).add(wordIndex+1,new WordNode("",0)); 
@@ -512,7 +573,7 @@ public static void print(){
  System.out.print(CLEAR_SCREEN); 
  System.out.flush(); 
  
- System.out.println("X " + X + " real_Y " + Y + " wordIndex " + wordIndex + " charIndex " + charIndex); 
+ System.out.println("X " + X + " real_Y " + Y + " wordIndex " + wordIndex + " charIndex " + charIndex + " is in word " +isInWord()); 
  
  for (int line_index = 0; line_index < text.size(); line_index++) { 
   int wIndex = 0; 
