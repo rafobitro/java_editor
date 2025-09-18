@@ -20,7 +20,7 @@ It already includes (or will soon include) features such as:
 - Syntax highlighting  
 - Copy and paste  
 - Undo and redo (tree-based)  
-- Cursor movement by words  
+- Cursor movement by shortcuts  
 - Proper cursor behavior when changing lines  
 
 ---
@@ -50,6 +50,45 @@ The main architectural idea is based on **word nodes**:
   and only toggling XY positions.  
   I even wrote a function that recalculates word and character indexes  
   from XY coordinates.  
-  However, this approach would hurt performance (especially for extremely long single lines).
+  However, this approach would hurt performance (especially for extremely long single lines).  
 
-  
+---
+
+## Input and File I/O  
+
+- Currently uses **JLine** for keyboard input,  
+  but I am directly reading raw keyboard input through it
+  (only working with unix like systems).  
+  Because of this, I plan to remove the library in the future.  
+
+- **Loading files**: the editor converts text into `WordNode`s,  
+  while recognizing special keywords and delimiters differently  
+  (important for word counting and syntax highlighting).  
+
+- **Saving files**: reconstructs the text by walking through all `WordNode`s  
+  and writing words + spaces back into a normal file format.  
+
+---
+
+## Syntax Highlighting  
+
+- Uses a separate data structure that stores colors in parallel with the text.  
+- I could have included color directly inside each `WordNode`,  
+  but keeping it separate leaves the option open for  
+  **smart loading only of visible text** (to save memory).  
+  I planned this optimization but did not implement it yet.  
+
+- Highlighting itself is done through simple keyword recognition  
+  and mapping via a **HashMap**.  
+
+- Planned: only process and print the visible part of the text  
+  instead of the full buffer.  
+
+---
+
+## Undo / Redo  (not yet)
+
+- Undo/redo is built on a **tree structure**,  
+  which allows better control of old versions without losing changes.  
+- This design makes branching and step-by-step recovery easier  
+  compared to a simple linear history.  
